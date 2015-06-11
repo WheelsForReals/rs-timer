@@ -1,0 +1,75 @@
+﻿<Window x:Class="Timer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Timer" MinHeight="175" mc:Ignorable="d"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Name="window_Timer"
+        Loaded="window_Timer_Loaded"
+        Closing="window_Timer_Closing"
+        KeyDown="window_Timer_KeyDown"
+        Height="175"
+        Width="200"
+        MinWidth="200"
+        Icon="/Timer;component/clock.ico"
+        Activated="window_Timer_Activated"
+        MouseDown="window_Timer_MouseDown">
+    
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo x:Name="taskBarItemInfo" />
+    </Window.TaskbarItemInfo>
+    
+    <Grid Name="grid_Timer" Background="#FFEBE9E9">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="50" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="35" />
+        </Grid.RowDefinitions>
+        
+        <Button Content="Restart" Name="button_Restart" Width="74" Height="23" IsTabStop="False" HorizontalAlignment="Left" VerticalAlignment="Center" TextOptions.TextFormattingMode="Display" Click="button_Restart_Click" Grid.Row="3" Grid.Column="1" Margin="1" />
+        <Button Content="Start" Name="button_Start" Height="23" Width="74" IsTabStop="False" VerticalAlignment="Center" HorizontalAlignment="Right" TextOptions.TextFormattingMode="Display" Click="button_Start_Click" Grid.Row="3" Margin="1" />
+        
+        <TextBlock Text="Minutes" Name="label_Minutes" Margin="0,6,6,0" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Row="1" FlowDirection="RightToLeft" />
+        <TextBlock Text="Seconds" Name="label_Seconds" Margin="0,0,6,3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="1" FlowDirection="RightToLeft" />
+        
+        <TextBox Name="textBox_Seconds" HorizontalContentAlignment="Center" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="66" KeyDown="textBox_KeyDown" Grid.Row="1" Grid.Column="1" Padding="0,2" Margin="3,0,0,0" />
+        <TextBox Name="textBox_Minutes" HorizontalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" Width="66" KeyDown="textBox_KeyDown" Grid.Row="1" Grid.Column="1" Margin="3" Padding="0,2" />
+        
+        <Menu VerticalAlignment="Top" Grid.ColumnSpan="2">
+            <Menu.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="White" Offset="0" />
+                    <GradientStop Color="#FFEBE9E9" Offset="1" />
+                </LinearGradientBrush>
+            </Menu.Background>
+            
+            <MenuItem Header="File" IsTabStop="False">
+                <MenuItem Header="Start/Pause" InputGestureText="Space" Name="menuItem_StartPause" Click="menuItem_StartPause_Click" />
+                <MenuItem Header="Restart" InputGestureText="R" Name="menuItem_Restart" Click="menuItem_Restart_Click" />
+                <MenuItem Header="Exit" InputGestureText="Alt+F4" Name="menuItem_Exit" Click="menuItem_File_Exit_Click" />
+            </MenuItem>
+            <MenuItem Header="Options" IsTabStop="False">
+                <MenuItem Header="Notifications">
+                    <MenuItem Header="Sound" Name="menuItem_Notifications_Sound" IsCheckable="True" ToolTip="Play a sound when the timer reaches 0:00" />
+                    <MenuItem Header="Flash Window" Name="menuItem_Notifications_FlashWindow" IsCheckable="True" ToolTip="Flash the window the timer reaches 0:00" />
+                </MenuItem>
+                <MenuItem Header="Always On Top" Name="menuItem_Options_AlwaysOnTop" IsCheckable="True" Click="menuItem_Options_AlwaysOnTop_Click" ToolTip="Keep this window on top of all others" />
+                <MenuItem Header="Auto Restart" Name="menuItem_Options_AutoRestart" IsCheckable="True" Click="menuItem_Options_AutoRestart_Click" ToolTip="Automatically restart the timer when interacting with the RS window" />
+                <MenuItem Header="Progress Bar" Name="menuItem_Options_ProgressBar" Click="menuItem_Options_ProgressBar_Click" IsCheckable="True" ToolTip="Show a progress bar in the Windows taskbar while the timer is running" />
+            </MenuItem>
+            <MenuItem Header="View" Name="menuItem_Size" IsTabStop="False">
+                <MenuItem Header="Hide minutes/seconds input boxes" InputGestureText="C" Name="menuItem_Size_Compact" ToolTip="Hides everything except for the menu and time display" Click="menuItem_Size_Compact_Click" IsCheckable="True" />
+            </MenuItem>
+        </Menu>
+        
+        <Viewbox Name="viewbox" Grid.Row="2" Grid.ColumnSpan="2" Margin="5,0">
+            <TextBlock Text="0:00" FontWeight="Bold" Name="label_Time" Padding="0" MouseDown="viewbox_MouseDown" TextAlignment="Center" FontStretch="UltraCondensed" />
+        </Viewbox>
+    </Grid>
+</Window>
