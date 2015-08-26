@@ -15,6 +15,7 @@ using System.Windows.Threading;
 using System.Windows.Shell;
 using System.Runtime.InteropServices;
 using Gma.System.MouseKeyHook;
+using System.Media;
 
 namespace Timer
 {
@@ -319,20 +320,6 @@ namespace Timer
         }
 
         /// <summary>
-        /// Makes a beep noise a specified number of times.
-        /// </summary>
-        /// <param name="n">Number of times to make the beep noise.</param>
-        private void beep(int n)
-        {
-            // Do this on a new thread so it doesn't block the UI
-            new System.Threading.Thread(() =>
-            {
-                for (int i = 0; i < n; i++)
-                    Console.Beep();
-            }).Start();
-        }
-
-        /// <summary>
         /// Performs all necessary actions for pausing the timer.
         /// </summary>
         private void PauseTimer()
@@ -402,7 +389,7 @@ namespace Timer
                 return;
 
             if (menuItem_Options_ProgressBar.IsChecked)
-                taskBarItemInfo.ProgressValue = customTimer.PercentSecondsRemaining;
+                taskBarItemInfo.ProgressValue = Math.Max(customTimer.PercentSecondsRemaining, 0.01);
 
             // Update the time label
             label_Time.Text = string.Format("{0}:{1:00}", customTimer.Minutes, customTimer.Seconds);
@@ -427,7 +414,7 @@ namespace Timer
                 WindowExtensions.FlashWindow(this, 4);
 
             if (menuItem_Notifications_Sound.IsChecked == true)
-                beep(2);
+                SystemSounds.Asterisk.Play();
         }
 
         /// <summary>

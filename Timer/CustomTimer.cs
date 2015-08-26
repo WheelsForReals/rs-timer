@@ -48,25 +48,25 @@ namespace Timer
 
             OnSecondsTick(new EventArgs());
 
-            if (minutes + seconds > 0)
+            if (minutes > 0 || seconds > 0)
             {
                 if (seconds == 0)
                 {
                     minutes--;
                     seconds = 60;
 
-                    OnMinutesTick(new EventArgs());
+                    OnMinutesTick(EventArgs.Empty);
                 }
             }
             else
             {
-                OnTimerEnded(new EventArgs());
+                OnTimerEnded(EventArgs.Empty);
             }
         }
 
         public bool IsTimerAllZero()
         {
-            return minutes + seconds == 0;
+            return minutes == 0 && seconds == 0;
         }
 
         protected virtual void OnSecondsTick(EventArgs e)
