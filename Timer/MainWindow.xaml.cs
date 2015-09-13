@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -16,6 +18,7 @@ using System.Windows.Shell;
 using System.Runtime.InteropServices;
 using Gma.System.MouseKeyHook;
 using System.Media;
+using System.Windows.Interop;
 
 namespace Timer
 {
@@ -111,20 +114,45 @@ namespace Timer
         }
 
         /// <summary>
-        /// Used by global hooks for MouseUp/KeyPress events.
         /// Restarts the timer and stops the window flashing.
         /// </summary>
+        /// <param name="e"></param>
         private void GlobalTimerRestart()
         {
-            try
-            {
-                if (IsRuneScapeWindowActive())
-                {
-                    WindowExtensions.StopFlashingWindow(this);
-                    button_Restart_Click(null, null);
-                }
-            }
-            catch (Exception) { }
+            Screen s;
+            Screen timerScreen = GetTimerScreen();
+        }
+
+        /// <summary>
+        /// Determines if the event happened on the same screen
+        /// as the timer.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private bool IsEventOnTimerScreen()
+        {
+            Screen eventScreen = GetForegroundWindowScreen();
+            Screen timerScreen = GetTimerScreen();
+
+            return eventScreen.Equals(timerScreen);
+        }
+
+        /// <summary>
+        /// Gets the screen the foreground window is on.
+        /// </summary>
+        /// <returns></returns>
+        private Screen GetForegroundWindowScreen()
+        {
+            return Screen.FromHandle(GetForegroundWindow());
+        }
+
+        /// <summary>
+        /// Gets the screen the timer window is on.
+        /// </summary>
+        /// <returns></returns>
+        private Screen GetTimerScreen()
+        {
+            return Screen.FromHandle(new WindowInteropHelper(Window.GetWindow(this)).Handle);
         }
 
         /// <summary>
@@ -135,7 +163,15 @@ namespace Timer
         /// <param name="e"></param>
         private void globalHook_MouseUpExt(object sender, MouseEventExtArgs e)
         {
-            GlobalTimerRestart();
+            try
+            {
+                if (IsRuneScapeWindowActive() && IsEventOnTimerScreen())
+                {
+                    WindowExtensions.StopFlashingWindow(this);
+                    button_Restart_Click(null, null);
+                }
+            }
+            catch (Exception) { }
         }
 
         /// <summary>
@@ -146,7 +182,15 @@ namespace Timer
         /// <param name="e"></param>
         private void globalHook_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
         {
-            GlobalTimerRestart();
+            try
+            {
+                if (IsRuneScapeWindowActive() && IsEventOnTimerScreen())
+                {
+                    WindowExtensions.StopFlashingWindow(this);
+                    button_Restart_Click(null, null);
+                }
+            }
+            catch (Exception) { }
         }
 
         private void InitializeDispatcherTimer()
@@ -183,7 +227,7 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void textBox_KeyDown(object sender, KeyEventArgs e)
+        private void textBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 if (sender == textBox_Minutes || sender == textBox_Seconds)
@@ -497,7 +541,7 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void window_Timer_KeyDown(object sender, KeyEventArgs e)
+        private void window_Timer_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.C)
             {
