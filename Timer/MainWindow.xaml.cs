@@ -36,6 +36,17 @@ namespace Timer
         [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
 
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool GetWindowRect(IntPtr hwnd, out Rect lpRect);
+
+        public struct Rect
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
         CustomTimer customTimer;
         DispatcherTimer dispatcherTimer;
         IKeyboardMouseEvents globalHook;
@@ -114,45 +125,55 @@ namespace Timer
         }
 
         /// <summary>
-        /// Restarts the timer and stops the window flashing.
-        /// </summary>
-        /// <param name="e"></param>
-        private void GlobalTimerRestart()
-        {
-            Screen s;
-            Screen timerScreen = GetTimerScreen();
-        }
-
-        /// <summary>
-        /// Determines if the event happened on the same screen
-        /// as the timer.
+        /// Determines if the event happened while the timer window
+        /// was within the same rectangle as the RS window.
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        private bool IsEventOnTimerScreen()
+        private bool AreWindowBoundsCorrect()
         {
-            Screen eventScreen = GetForegroundWindowScreen();
-            Screen timerScreen = GetTimerScreen();
+            Rect fgRect = GetForegroundWindowRectangle();
+            Rect timerRect = GetTimerRectangle();
 
-            return eventScreen.Equals(timerScreen);
+            return IsRectWithinOther(timerRect, fgRect);
+        }
+
+        /// <summary>
+        /// Determines if rect1 is contained within rect2.
+        /// </summary>
+        /// <param name="rect1">Smaller rect</param>
+        /// <param name="rect2">Larger rect</param>
+        /// <returns></returns>
+        public bool IsRectWithinOther(Rect rect1, Rect rect2)
+        {
+            return rect1.Left >= rect2.Left &&
+                rect1.Right <= rect2.Right &&
+                rect1.Top >= rect2.Top &&
+                rect1.Bottom <= rect2.Bottom;
         }
 
         /// <summary>
         /// Gets the screen the foreground window is on.
         /// </summary>
         /// <returns></returns>
-        private Screen GetForegroundWindowScreen()
+        private Rect GetForegroundWindowRectangle()
         {
-            return Screen.FromHandle(GetForegroundWindow());
+            Rect rect = new Rect();
+            GetWindowRect(GetForegroundWindow(), out rect);
+
+            return rect;
         }
 
         /// <summary>
         /// Gets the screen the timer window is on.
         /// </summary>
         /// <returns></returns>
-        private Screen GetTimerScreen()
+        private Rect GetTimerRectangle()
         {
-            return Screen.FromHandle(new WindowInteropHelper(Window.GetWindow(this)).Handle);
+            Rect rect = new Rect();
+            GetWindowRect(new WindowInteropHelper(Window.GetWindow(this)).Handle, out rect);
+
+            return rect;
         }
 
         /// <summary>
@@ -165,7 +186,7 @@ namespace Timer
         {
             try
             {
-                if (IsRuneScapeWindowActive() && IsEventOnTimerScreen())
+                if (IsRuneScapeWindowActive() && AreWindowBoundsCorrect())
                 {
                     WindowExtensions.StopFlashingWindow(this);
                     button_Restart_Click(null, null);
@@ -184,7 +205,7 @@ namespace Timer
         {
             try
             {
-                if (IsRuneScapeWindowActive() && IsEventOnTimerScreen())
+                if (IsRuneScapeWindowActive() && AreWindowBoundsCorrect())
                 {
                     WindowExtensions.StopFlashingWindow(this);
                     button_Restart_Click(null, null);
