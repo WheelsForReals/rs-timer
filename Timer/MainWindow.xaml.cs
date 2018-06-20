@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Windows.Shell;
 using System.Runtime.InteropServices;
@@ -52,8 +42,7 @@ namespace Timer
         IKeyboardMouseEvents globalHook;
         bool firstPress = true;
 
-        const string rsBrowserWindowTitle = "RuneScape - MMORPG - The No.1 Free Online Multiplayer Game";
-        const string rsClientWindowTitle = "RuneScape";
+        string[] fullMatchWindowTitles = { "RuneScape", "Old School RuneScape", "RuneLite" };
 
         public MainWindow()
         {
@@ -91,8 +80,8 @@ namespace Timer
         {
             globalHook = Hook.GlobalEvents();
 
-            globalHook.MouseUpExt += globalHook_MouseUpExt;
-            globalHook.KeyUp += globalHook_KeyUp;
+            globalHook.MouseUpExt += GlobalHook_MouseUpExt;
+            globalHook.KeyUp += GlobalHook_KeyUp;
         }
 
         /// <summary>
@@ -100,8 +89,8 @@ namespace Timer
         /// </summary>
         private void DetachHooks()
         {
-            globalHook.MouseUpExt -= globalHook_MouseUpExt;
-            globalHook.KeyUp -= globalHook_KeyUp;
+            globalHook.MouseUpExt -= GlobalHook_MouseUpExt;
+            globalHook.KeyUp -= GlobalHook_KeyUp;
 
             globalHook.Dispose();
         }
@@ -116,7 +105,7 @@ namespace Timer
             {
                 string fgWindowTitle = GetWindowTitle(GetForegroundWindow());
 
-                return fgWindowTitle.Contains(rsBrowserWindowTitle) || fgWindowTitle == rsClientWindowTitle;
+                return Array.Exists(fullMatchWindowTitles, fgWindowTitle.Equals);
             }
             catch (Exception)
             {
@@ -182,14 +171,14 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void globalHook_MouseUpExt(object sender, MouseEventExtArgs e)
+        private void GlobalHook_MouseUpExt(object sender, MouseEventExtArgs e)
         {
             try
             {
                 if (IsRuneScapeWindowActive() && AreWindowBoundsCorrect())
                 {
                     WindowExtensions.StopFlashingWindow(this);
-                    button_Restart_Click(null, null);
+                    Button_Restart_Click(null, null);
                 }
             }
             catch (Exception) { }
@@ -201,14 +190,14 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void globalHook_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
+        private void GlobalHook_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             try
             {
                 if (IsRuneScapeWindowActive() && AreWindowBoundsCorrect())
                 {
                     WindowExtensions.StopFlashingWindow(this);
-                    button_Restart_Click(null, null);
+                    Button_Restart_Click(null, null);
                 }
             }
             catch (Exception) { }
@@ -217,16 +206,16 @@ namespace Timer
         private void InitializeDispatcherTimer()
         {
             dispatcherTimer = new DispatcherTimer();
-            dispatcherTimer.Tick += new EventHandler(timer_Tick);
+            dispatcherTimer.Tick += new EventHandler(Timer_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
         }
 
-        private void window_Timer_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Timer_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeCustomTimer();
 
             // Update the time display before starting it
-            customTimer_SecondsTick(customTimer, null);
+            CustomTimer_SecondsTick(customTimer, null);
         }
 
         /// <summary>
@@ -234,12 +223,12 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void window_Timer_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Timer_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             WindowExtensions.StopFlashingWindow(this);
             SaveSettings();
 
-            if (menuItem_Options_AutoRestart.IsChecked)
+            if (MenuItem_Options_AutoRestart.IsChecked)
                 DetachHooks();
         }
 
@@ -248,11 +237,11 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void textBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                if (sender == textBox_Minutes || sender == textBox_Seconds)
-                    button_Restart_Click(null, null);
+                if (sender == TextBox_Minutes || sender == TextBox_Seconds)
+                    Button_Restart_Click(null, null);
 
             // Only accept numbers and the backspace key as valid key presses
             if (e.Key != Key.Back && e.Key != Key.Tab)
@@ -266,7 +255,7 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button_Start_Click(object sender, RoutedEventArgs e)
+        private void Button_Start_Click(object sender, RoutedEventArgs e)
         {
             // Only update the CustomTimer if it's our first time pressing the button
             if (firstPress == true)
@@ -282,7 +271,7 @@ namespace Timer
                 return;
             }
 
-            if (button_Start.Content as string == "Start")
+            if (Button_Start.Content as string == "Start")
                 StartTimer();
             else // Button says "Pause"
                 PauseTimer();
@@ -293,7 +282,7 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button_Restart_Click(object sender, RoutedEventArgs e)
+        private void Button_Restart_Click(object sender, RoutedEventArgs e)
         {
             // Stop the timer so it doesn't update in the middle of a Tick event
             dispatcherTimer.Stop();
@@ -312,7 +301,7 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menuItem_File_Exit_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_File_Exit_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
@@ -322,9 +311,9 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menuItem_Options_AlwaysOnTop_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Options_AlwaysOnTop_Click(object sender, RoutedEventArgs e)
         {
-            this.Topmost = menuItem_Options_AlwaysOnTop.IsChecked;
+            this.Topmost = MenuItem_Options_AlwaysOnTop.IsChecked;
         }
 
         /// <summary>
@@ -332,45 +321,45 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menuItem_Size_Compact_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Size_Compact_Click(object sender, RoutedEventArgs e)
         {
-            if (menuItem_Size_Compact.IsChecked)
+            if (MenuItem_Size_Compact.IsChecked)
             {
                 // Hides the minutes/seconds labels and input boxes, removes the
                 // window border, and lowers the MinHeight and MinWidth.
 
                 this.WindowStyle = WindowStyle.None;
-                Grid.SetRowSpan(viewbox, 3);
-                Grid.SetRow(viewbox, 1);
-                grid_Timer.RowDefinitions[1].Height = new GridLength(1, GridUnitType.Star);
+                Grid.SetRowSpan(Viewbox, 3);
+                Grid.SetRow(Viewbox, 1);
+                Grid_Timer.RowDefinitions[1].Height = new GridLength(1, GridUnitType.Star);
                 this.MinHeight = 70;
                 this.MinWidth = 150;
-                this.label_Minutes.Visibility = Visibility.Collapsed;
-                this.label_Seconds.Visibility = Visibility.Collapsed;
-                this.textBox_Minutes.Visibility = Visibility.Collapsed;
-                this.textBox_Seconds.Visibility = Visibility.Collapsed;
-                this.button_Start.Visibility = Visibility.Collapsed;
-                this.button_Restart.Visibility = Visibility.Collapsed;
+                this.Label_Minutes.Visibility = Visibility.Collapsed;
+                this.Label_Seconds.Visibility = Visibility.Collapsed;
+                this.TextBox_Minutes.Visibility = Visibility.Collapsed;
+                this.TextBox_Seconds.Visibility = Visibility.Collapsed;
+                this.Button_Start.Visibility = Visibility.Collapsed;
+                this.Button_Restart.Visibility = Visibility.Collapsed;
             }
             else
             {
                 this.WindowStyle = WindowStyle.SingleBorderWindow;
                 
-                if (label_Minutes.Visibility == Visibility.Collapsed)
+                if (Label_Minutes.Visibility == Visibility.Collapsed)
                 {
-                    Grid.SetRowSpan(viewbox, 1);
-                    Grid.SetRow(viewbox, 2);
-                    grid_Timer.RowDefinitions[1].Height = new GridLength(50);
+                    Grid.SetRowSpan(Viewbox, 1);
+                    Grid.SetRow(Viewbox, 2);
+                    Grid_Timer.RowDefinitions[1].Height = new GridLength(50);
                     this.MinHeight = 175;
                     this.MinWidth = 200;
                 }
 
-                this.label_Minutes.Visibility = Visibility.Visible;
-                this.label_Seconds.Visibility = Visibility.Visible;
-                this.textBox_Minutes.Visibility = Visibility.Visible;
-                this.textBox_Seconds.Visibility = Visibility.Visible;
-                this.button_Start.Visibility = Visibility.Visible;
-                this.button_Restart.Visibility = Visibility.Visible;
+                this.Label_Minutes.Visibility = Visibility.Visible;
+                this.Label_Seconds.Visibility = Visibility.Visible;
+                this.TextBox_Minutes.Visibility = Visibility.Visible;
+                this.TextBox_Seconds.Visibility = Visibility.Visible;
+                this.Button_Start.Visibility = Visibility.Visible;
+                this.Button_Restart.Visibility = Visibility.Visible;
             }
         }
 
@@ -379,7 +368,7 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object sender, EventArgs e)
         {
             customTimer.DecrementSeconds();
         }
@@ -389,9 +378,9 @@ namespace Timer
         /// </summary>
         private void PauseTimer()
         {
-            if (menuItem_Options_ProgressBar.IsChecked)
-                taskBarItemInfo.ProgressState = TaskbarItemProgressState.Paused;
-            button_Start.Content = "Start";
+            if (MenuItem_Options_ProgressBar.IsChecked)
+                TaskBarItemInfo.ProgressState = TaskbarItemProgressState.Paused;
+            Button_Start.Content = "Start";
             dispatcherTimer.Stop();
         }
 
@@ -401,11 +390,11 @@ namespace Timer
         private void StartTimer()
         {
             // Need to do this to make the time label update for the 1st second
-            customTimer_SecondsTick(customTimer, null);
+            CustomTimer_SecondsTick(customTimer, null);
 
-            if (menuItem_Options_ProgressBar.IsChecked)
-                taskBarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
-            button_Start.Content = "Pause";
+            if (MenuItem_Options_ProgressBar.IsChecked)
+                TaskBarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
+            Button_Start.Content = "Pause";
             dispatcherTimer.Start();
         }
 
@@ -416,9 +405,7 @@ namespace Timer
         /// <returns>Integer representation of the string</returns>
         private int CustomParseInt(string s)
         {
-            int n;
-
-            return int.TryParse(s, out n) ? n : 0;
+            return int.TryParse(s, out int n) ? n : 0;
         }
 
         /// <summary>
@@ -428,17 +415,17 @@ namespace Timer
         private void InitializeCustomTimer()
         {
             // Assign value in text box to minutes/seconds
-            int minutes = CustomParseInt(textBox_Minutes.Text);
-            int seconds = CustomParseInt(textBox_Seconds.Text);
+            int minutes = CustomParseInt(TextBox_Minutes.Text);
+            int seconds = CustomParseInt(TextBox_Seconds.Text);
 
             customTimer = new CustomTimer(minutes, seconds);
 
             // Update the text boxes with new values if necessary
-            textBox_Minutes.Text = customTimer.Minutes.ToString();
-            textBox_Seconds.Text = customTimer.Seconds.ToString();
+            TextBox_Minutes.Text = customTimer.Minutes.ToString();
+            TextBox_Seconds.Text = customTimer.Seconds.ToString();
 
-            customTimer.TimerEnded += customTimer_TimerEnded;
-            customTimer.SecondsTick += customTimer_SecondsTick;
+            customTimer.TimerEnded += CustomTimer_TimerEnded;
+            customTimer.SecondsTick += CustomTimer_SecondsTick;
         }
 
         /// <summary>
@@ -447,17 +434,16 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void customTimer_SecondsTick(object sender, EventArgs e)
+        void CustomTimer_SecondsTick(object sender, EventArgs e)
         {
-            CustomTimer customTimer = sender as CustomTimer;
-            if (customTimer == null)
+            if (!(sender is CustomTimer customTimer))
                 return;
 
-            if (menuItem_Options_ProgressBar.IsChecked)
-                taskBarItemInfo.ProgressValue = Math.Max(customTimer.PercentSecondsRemaining, 0.01);
+            if (MenuItem_Options_ProgressBar.IsChecked)
+                TaskBarItemInfo.ProgressValue = Math.Max(customTimer.PercentSecondsRemaining, 0.01);
 
             // Update the time label
-            label_Time.Text = string.Format("{0}:{1:00}", customTimer.Minutes, customTimer.Seconds);
+            Label_Time.Text = string.Format("{0}:{1:00}", customTimer.Minutes, customTimer.Seconds);
         }
 
         /// <summary>
@@ -467,18 +453,18 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void customTimer_TimerEnded(object sender, EventArgs e)
+        void CustomTimer_TimerEnded(object sender, EventArgs e)
         {
             // Timer has finished
-            taskBarItemInfo.ProgressState = TaskbarItemProgressState.None;
-            taskBarItemInfo.ProgressValue = 0.0;
+            TaskBarItemInfo.ProgressState = TaskbarItemProgressState.None;
+            TaskBarItemInfo.ProgressValue = 0.0;
             firstPress = true;
             PauseTimer();
 
-            if (menuItem_Notifications_FlashWindow.IsChecked)
+            if (MenuItem_Notifications_FlashWindow.IsChecked)
                 WindowExtensions.FlashWindow(this, 4);
 
-            if (menuItem_Notifications_Sound.IsChecked == true)
+            if (MenuItem_Notifications_Sound.IsChecked == true)
                 SystemSounds.Asterisk.Play();
         }
 
@@ -487,15 +473,15 @@ namespace Timer
         /// </summary>
         private void RestoreSettings()
         {
-            textBox_Minutes.Text = Properties.Settings.Default.Minutes;
-            textBox_Seconds.Text = Properties.Settings.Default.Seconds;
-            this.Topmost = menuItem_Options_AlwaysOnTop.IsChecked = Properties.Settings.Default.AlwaysOnTop;
-            menuItem_Options_AutoRestart.IsChecked = Properties.Settings.Default.AutoRestart;
-            menuItem_Notifications_Sound.IsChecked = Properties.Settings.Default.NotificationSound;
-            menuItem_Notifications_FlashWindow.IsChecked = Properties.Settings.Default.FlashWindow;
-            menuItem_Options_ProgressBar.IsChecked = Properties.Settings.Default.ProgressBar;
-            menuItem_Size_Compact.IsChecked = Properties.Settings.Default.CompactSize;
-            menuItem_Size_Compact_Click(null, null);
+            TextBox_Minutes.Text = Properties.Settings.Default.Minutes;
+            TextBox_Seconds.Text = Properties.Settings.Default.Seconds;
+            this.Topmost = MenuItem_Options_AlwaysOnTop.IsChecked = Properties.Settings.Default.AlwaysOnTop;
+            MenuItem_Options_AutoRestart.IsChecked = Properties.Settings.Default.AutoRestart;
+            MenuItem_Notifications_Sound.IsChecked = Properties.Settings.Default.NotificationSound;
+            MenuItem_Notifications_FlashWindow.IsChecked = Properties.Settings.Default.FlashWindow;
+            MenuItem_Options_ProgressBar.IsChecked = Properties.Settings.Default.ProgressBar;
+            MenuItem_Size_Compact.IsChecked = Properties.Settings.Default.CompactSize;
+            MenuItem_Size_Compact_Click(null, null);
 
             // Check if the window's size is within the screen bounds
             this.Height = Math.Min(SystemParameters.VirtualScreenHeight, Properties.Settings.Default.Height);
@@ -515,7 +501,7 @@ namespace Timer
 
             this.WindowState = Properties.Settings.Default.WindowState;
 
-            if (globalHook == null && menuItem_Options_AutoRestart.IsChecked)
+            if (globalHook == null && MenuItem_Options_AutoRestart.IsChecked)
                 AttachHooks();
         }
 
@@ -524,14 +510,14 @@ namespace Timer
         /// </summary>
         private void SaveSettings()
         {
-            Properties.Settings.Default.Minutes = textBox_Minutes.Text;
-            Properties.Settings.Default.Seconds = textBox_Seconds.Text;
-            Properties.Settings.Default.AlwaysOnTop = menuItem_Options_AlwaysOnTop.IsChecked;
-            Properties.Settings.Default.AutoRestart = menuItem_Options_AutoRestart.IsChecked;
-            Properties.Settings.Default.NotificationSound = menuItem_Notifications_Sound.IsChecked;
-            Properties.Settings.Default.FlashWindow = menuItem_Notifications_FlashWindow.IsChecked;
-            Properties.Settings.Default.ProgressBar = menuItem_Options_ProgressBar.IsChecked;
-            Properties.Settings.Default.CompactSize = menuItem_Size_Compact.IsChecked;
+            Properties.Settings.Default.Minutes = TextBox_Minutes.Text;
+            Properties.Settings.Default.Seconds = TextBox_Seconds.Text;
+            Properties.Settings.Default.AlwaysOnTop = MenuItem_Options_AlwaysOnTop.IsChecked;
+            Properties.Settings.Default.AutoRestart = MenuItem_Options_AutoRestart.IsChecked;
+            Properties.Settings.Default.NotificationSound = MenuItem_Notifications_Sound.IsChecked;
+            Properties.Settings.Default.FlashWindow = MenuItem_Notifications_FlashWindow.IsChecked;
+            Properties.Settings.Default.ProgressBar = MenuItem_Options_ProgressBar.IsChecked;
+            Properties.Settings.Default.CompactSize = MenuItem_Size_Compact.IsChecked;
 
             // Don't care about the window's settings if it's minimized
             if (this.WindowState != WindowState.Minimized)
@@ -551,7 +537,7 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void viewbox_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Viewbox_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 this.DragMove();
@@ -562,25 +548,25 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void window_Timer_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Window_Timer_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.C)
             {
-                menuItem_Size_Compact.IsChecked = !menuItem_Size_Compact.IsChecked;
-                menuItem_Size_Compact_Click(null, null);
+                MenuItem_Size_Compact.IsChecked = !MenuItem_Size_Compact.IsChecked;
+                MenuItem_Size_Compact_Click(null, null);
             }
             else if (e.Key == Key.Escape)
             {
-                menuItem_Size_Compact.IsChecked = false;
-                menuItem_Size_Compact_Click(null, null);
+                MenuItem_Size_Compact.IsChecked = false;
+                MenuItem_Size_Compact_Click(null, null);
             }
             else if (e.Key == Key.Space)
             {
-                button_Start_Click(null, null);
+                Button_Start_Click(null, null);
             }
             else if (e.Key == Key.R)
             {
-                button_Restart_Click(null, null);
+                Button_Restart_Click(null, null);
             }
         }
 
@@ -589,7 +575,7 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void window_Timer_Activated(object sender, EventArgs e)
+        private void Window_Timer_Activated(object sender, EventArgs e)
         {
             WindowExtensions.StopFlashingWindow(this);
         }
@@ -599,19 +585,19 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menuItem_Options_ProgressBar_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Options_ProgressBar_Click(object sender, RoutedEventArgs e)
         {
-            if (menuItem_Options_ProgressBar.IsChecked)
+            if (MenuItem_Options_ProgressBar.IsChecked)
             {
-                taskBarItemInfo.ProgressValue = customTimer.PercentSecondsRemaining;
+                TaskBarItemInfo.ProgressValue = customTimer.PercentSecondsRemaining;
 
                 if (dispatcherTimer.IsEnabled)
-                    taskBarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
+                    TaskBarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
                 else
-                    taskBarItemInfo.ProgressState = TaskbarItemProgressState.Paused;
+                    TaskBarItemInfo.ProgressState = TaskbarItemProgressState.Paused;
             }
             else
-                taskBarItemInfo.ProgressState = TaskbarItemProgressState.None;
+                TaskBarItemInfo.ProgressState = TaskbarItemProgressState.None;
         }
 
         /// <summary>
@@ -619,9 +605,9 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menuItem_StartPause_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_StartPause_Click(object sender, RoutedEventArgs e)
         {
-            button_Start_Click(null, null);
+            Button_Start_Click(null, null);
         }
 
         /// <summary>
@@ -629,9 +615,9 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menuItem_Restart_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Restart_Click(object sender, RoutedEventArgs e)
         {
-            button_Restart_Click(null, null);
+            Button_Restart_Click(null, null);
         }
 
         /// <summary>
@@ -639,9 +625,9 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menuItem_Options_AutoRestart_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Options_AutoRestart_Click(object sender, RoutedEventArgs e)
         {
-            if (menuItem_Options_AutoRestart.IsChecked)
+            if (MenuItem_Options_AutoRestart.IsChecked)
                 AttachHooks();
             else
                 DetachHooks();
@@ -652,11 +638,11 @@ namespace Timer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void window_Timer_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Window_Timer_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            grid_Timer.Focusable = true;
-            grid_Timer.Focus();
-            grid_Timer.Focusable = false;
+            Grid_Timer.Focusable = true;
+            Grid_Timer.Focus();
+            Grid_Timer.Focusable = false;
         }
     }
 }

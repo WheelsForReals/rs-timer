@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Interop;
 using System.Windows;
 using System.Runtime.InteropServices;
@@ -37,7 +34,7 @@ namespace Timer
 
         public static void FlashWindow(this Window win, UInt32 count = UInt32.MaxValue)
         {
-            //Don't flash if the window is active
+            // Don't flash if the window is active
             if (win.IsActive) return;
 
             WindowInteropHelper h = new WindowInteropHelper(win);

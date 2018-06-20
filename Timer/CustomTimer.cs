@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Timer
 {
@@ -17,14 +14,14 @@ namespace Timer
         {
             get
             {
-                return (double) (initialTotalSeconds - secondsRemaining) / initialTotalSeconds;
+                return (double) (initialTotalSeconds - SecondsRemaining) / initialTotalSeconds;
             }
         }
 
         private int minutes;
         private int seconds;
         private int initialTotalSeconds;
-        private int secondsRemaining { get { return minutes * 60 + seconds; } }
+        private int SecondsRemaining { get { return minutes * 60 + seconds; } }
 
         public CustomTimer(int minutes, int seconds)
         {
@@ -46,7 +43,7 @@ namespace Timer
                 seconds = 59;
             }
 
-            OnSecondsTick(new EventArgs());
+            OnSecondsTick(EventArgs.Empty);
 
             if (minutes > 0 || seconds > 0)
             {
@@ -71,26 +68,17 @@ namespace Timer
 
         protected virtual void OnSecondsTick(EventArgs e)
         {
-            EventHandler handler = SecondsTick;
-
-            if (handler != null)
-                handler(this, e);
+            SecondsTick?.Invoke(this, e);
         }
 
         protected virtual void OnTimerEnded(EventArgs e)
         {
-            EventHandler handler = TimerEnded;
-
-            if (handler != null)
-                handler(this, e);
+            TimerEnded?.Invoke(this, e);
         }
 
         protected virtual void OnMinutesTick(EventArgs e)
         {
-            EventHandler handler = MinutesTick;
-
-            if (handler != null)
-                handler(this, e);
+            MinutesTick?.Invoke(this, e);
         }
     }
 }
