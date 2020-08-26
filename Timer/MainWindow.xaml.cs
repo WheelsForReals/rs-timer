@@ -41,8 +41,8 @@ namespace Timer
         DispatcherTimer dispatcherTimer;
         IKeyboardMouseEvents globalHook;
         bool firstPress = true;
-
-        string[] fullMatchWindowTitles = { "RuneScape", "Old School RuneScape", "RuneLite" };
+        readonly string[] equalsMatchWindowTitles = { "RuneScape", "Old School RuneScape", "RuneLite" };
+        readonly string[] startsWithMatchWindowTitles = { "RuneLite - " };
 
         public MainWindow()
         {
@@ -105,7 +105,8 @@ namespace Timer
             {
                 string fgWindowTitle = GetWindowTitle(GetForegroundWindow());
 
-                return Array.Exists(fullMatchWindowTitles, fgWindowTitle.Equals);
+                return Array.Exists(equalsMatchWindowTitles, fgWindowTitle.Equals)
+                    || Array.Exists(startsWithMatchWindowTitles, fgWindowTitle.StartsWith);
             }
             catch (Exception)
             {
@@ -344,7 +345,7 @@ namespace Timer
             else
             {
                 this.WindowStyle = WindowStyle.SingleBorderWindow;
-                
+
                 if (Label_Minutes.Visibility == Visibility.Collapsed)
                 {
                     Grid.SetRowSpan(Viewbox, 1);
